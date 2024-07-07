@@ -1,0 +1,22 @@
+{
+  "name": "gpe-shift-parser_appsscript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@google/clasp": "^2.4.1",
+    "@typescript-eslint/eslint-plugin": "^5.33.0",
+    "@typescript-eslint/parser": "^5.33.0",
+    "eslint": "^8.21.0",
+    "prettier": "^2.7.1"
+  },
+  "dependencies": {
+    "@types/google-apps-script": "^1.0.53"
+  },
+  "type": "module"
+}

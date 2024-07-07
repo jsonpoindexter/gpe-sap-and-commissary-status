@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Details Fetcher</title>
+</head>
+<body>
+<h1>Search for User Details</h1>
+<form id="searchForm">
+    <input type="text" name="searchString" placeholder="Enter search term">
+    <button type="submit">Search</button>
+</form>
+<div id="result">
+    <? if (typeof data !== 'undefined' && data) { ?>
+    <p>User Details: <?= JSON.stringify(data) ?></p>
+    <? } else if (typeof data !== 'undefined' && data === null) { ?>
+    <p>User not found.</p>
+    <? } ?>
+</div>
+
+<script>
+    document.getElementById('searchForm').onsubmit = function(event) {
+        event.preventDefault();
+        const searchString = document.getElementsByName('searchString')[0].value;
+        google.script.run.withSuccessHandler(function(response) {
+            // Refresh the page content directly with the response
+            document.getElementById('result').innerHTML = response ?
+                'User Details: ' + JSON.stringify(response) : 'User not found.';
+        }).getUserDetails(searchString);
+    };
+</script>
+</body>
+</html>
