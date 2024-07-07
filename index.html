@@ -1,32 +1,173 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>User Details Fetcher</title>
+    <title>SAP Status</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: black;;
+            color: white; /* Light text */
+            background-image: url('https://babalooey-static.s3-us-west-2.amazonaws.com/Images/blue_patterns_wallpaper_DARK.jpg');
+            background-repeat: no-repeat;
+            background-size: cover;
+            text-align: center; /* Centering text */
+        }
+        #searchForm {
+            margin: 50px auto; /* More margin, centering */
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+            border-radius: 10px;
+            display: inline-block;
+        }
+        input[type="text"], button {
+            margin: 10px 0;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 5px;
+        }
+        input[type="text"] {
+            width: 300px; /* Larger input field */
+        }
+        button {
+            cursor: pointer;
+            background-color: #0a58ca;
+            color: white;
+            border: none;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0c46a0;
+        }
+        #resultContainer {
+            text-align: center; /* Ensures content is centered */
+            min-height: 50px; /* Provides a minimum height for better layout */
+            position: relative; /* Needed for absolute positioning of children */
+            width: 100%; /* Full width to handle centering */
+        }
+        #loadingSpinner {
+            display: none;
+            position: absolute; /* Absolute positioning within the container */
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Adjust to exact center */
+            color: white;
+            font-size: 18px;
+        }
+        #result {
+            width: 100%; /* Ensures the table is centered within the container */
+        }
+        #result table {
+            margin: auto; /* Center the table on the page */
+            width: 50%; /* Set the width to 50% of its container */
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.1); /* Light translucent background */
+            color: white; /* White text color */
+            border-radius: 8px; /* Rounded corners */
+            overflow: hidden; /* Ensures the border radius applies */
+        }
+        #result th, #result td {
+            text-align: left;
+            padding: 12px 20px; /* More padding for a better look */
+            border-bottom: 1px solid #ddd; /* Subtle border for the bottom */
+            border-color: rgba(255, 255, 255, 0.2); /* Light border color */
+        }
+        #result th {
+            background-color: rgba(0, 0, 0, 0.4); /* Darker background for headers */
+        }
+        #lastUpdated {
+            margin-top: 20px;
+            color: lightgray;
+        }
+    </style>
 </head>
 <body>
-<h1>Search for User Details</h1>
-<form id="searchForm">
-    <input type="text" name="searchString" placeholder="Enter search term">
-    <button type="submit">Search</button>
-</form>
-<div id="result">
-    <? if (typeof data !== 'undefined' && data) { ?>
-    <p>User Details: <?= JSON.stringify(data) ?></p>
-    <? } else if (typeof data !== 'undefined' && data === null) { ?>
-    <p>User not found.</p>
-    <? } ?>
+<div style="padding-top: 100px;">
+    <h1>SAP Status</h1>
+    <form id="searchForm">
+        <label>
+            <input type="text" name="searchString" placeholder="Enter Babalooey email ">
+        </label>
+        <button type="submit">Search</button>
+    </form>
+    <div id="resultContainer">
+        <div id="result"></div>
+        <div id="loadingSpinner">Loading...</div>
+    </div>
+
+    <div id="lastUpdated"></div>
 </div>
 
 <script>
-    document.getElementById('searchForm').onsubmit = function(event) {
+
+    const form = document.getElementById('searchForm');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const resultDiv = document.getElementById('result');
+    const lastUpdatedDiv = document.getElementById('lastUpdated');
+
+    form.onsubmit = function(event) {
         event.preventDefault();
+        resultDiv.innerHTML = ''; // Clear previous results if any
+        disableForm()
+        showLoadingSpinner();
+
+        // disable the submit button and input field
+        form.getElementsByTagName('input')[0].disabled = true;
+        form.getElementsByTagName('button')[0].disabled = true;
         const searchString = document.getElementsByName('searchString')[0].value;
+
+        let startSearchTime = new Date().getTime();
+        let startResponseTime = new Date().getTime();
+
         google.script.run.withSuccessHandler(function(response) {
-            // Refresh the page content directly with the response
-            document.getElementById('result').innerHTML = response ?
-                'User Details: ' + JSON.stringify(response) : 'User not found.';
+            console.log('Response time: ' + (new Date().getTime() - startResponseTime) + 'ms');
+            enableForm();
+            hideLoadingSpinner();
+            if (response) {
+                const userDetails = JSON.parse(response);
+                displayResults(userDetails);
+                updateLastUpdated();
+            } else {
+                resultDiv.innerHTML = 'User not found.';
+            }
+            let endSearchTime = new Date().getTime();
+            console.log('Search took ' + (endSearchTime - startSearchTime) + 'ms');
         }).getUserDetails(searchString);
     };
+
+    function displayResults(data) {
+        let html = '<table>';
+        Object.keys(data).forEach(key => {
+            html += `<tr><td>${key}</td><td>${data[key]}</td></tr>`;
+        });
+        html += '</table>';
+        resultDiv.innerHTML = html;
+    }
+
+    function updateLastUpdated() {
+        const now = new Date();
+        lastUpdatedDiv.innerHTML = `Last Updated: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+    }
+
+    function disableForm() {
+        form.getElementsByTagName('input')[0].disabled = true;
+        form.getElementsByTagName('button')[0].disabled = true;
+    }
+
+    function enableForm() {
+        form.getElementsByTagName('input')[0].disabled = false;
+        form.getElementsByTagName('button')[0].disabled = false;
+    }
+
+    function showLoadingSpinner() {
+        resultDiv.innerHTML = ''; // Clear previous results if any
+        loadingSpinner.style.display = 'inline'; // Use 'block' for the spinner to occupy the full line
+        lastUpdatedDiv.innerHTML = ''; // Clear last updated
+    }
+
+    function hideLoadingSpinner() {
+        loadingSpinner.style.display = 'none';
+    }
 </script>
 </body>
 </html>
