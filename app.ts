@@ -13,25 +13,27 @@ function doGet() {
         .setSandboxMode(HtmlService.SandboxMode.IFRAME)
 }
 
-function getUserDetails(email: string) {
+interface UserDetails {
+    userDetails?: Record<string, string>
+    lastUpdate?: string
+}
+
+function getUserDetails(email: string): UserDetails {
     const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME)
     const data = sheet.getDataRange().getValues()
     const headers = data[0] // Fetch the headers
     const resultString = data.find(row => row[EMAIL_ROW].toLowerCase() === email.toLowerCase()) // Assuming details are in the 5th column\
-    // Create a resultObj that contains the headers as keys and the values as values from RESULT_COLLUMNS
-    const resultObj = {}
+    const resultObj = { userDetails: null, lastUpdate: PropertiesService.getScriptProperties().getProperty('postProcessLastUpdate')}
     if (resultString) {
+        resultObj.userDetails = {}
         RESULT_COLUMNS.forEach(i => {
-            // If value is of Date type then format it to local  military time string. example: 7/7/2024 00:00
             if (resultString[i] instanceof Date) {
                 resultString[i] = `${resultString[i].toLocaleDateString('en-US')}`
             }
-            resultObj[headers[i]] = resultString[i]
+            resultObj.userDetails[headers[i]] = resultString[i]
         })
-        return JSON.stringify(resultObj)
-    } else {
-        return null
     }
+    return resultObj
 }
 
 

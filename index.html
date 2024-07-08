@@ -75,7 +75,7 @@
         #result th {
             background-color: rgba(0, 0, 0, 0.4); /* Darker background for headers */
         }
-        #lastUpdated {
+        #lastUpdate {
             margin-top: 20px;
             color: lightgray;
         }
@@ -95,7 +95,7 @@
         <div id="loadingSpinner">Loading...</div>
     </div>
 
-<!--    <div id="lastUpdated"></div>-->
+    <div id="lastUpdate"></div>
 </div>
 
 <script>
@@ -103,13 +103,13 @@
     const form = document.getElementById('searchForm');
     const loadingSpinner = document.getElementById('loadingSpinner');
     const resultDiv = document.getElementById('result');
-    // const lastUpdatedDiv = document.getElementById('lastUpdated');
+    const lastUpdateDiv = document.getElementById('lastUpdate');
 
     form.onsubmit = function(event) {
         event.preventDefault();
         clearResults();
         disableForm();
-        // clearLastUpdated();
+        clearLastUpdated();
         showLoadingSpinner();
 
         // disable the submit button and input field
@@ -120,12 +120,16 @@
         google.script.run.withSuccessHandler(function(response) {
             enableForm();
             hideLoadingSpinner();
-            if (response) {
-                const userDetails = JSON.parse(response);
+            const { userDetails, lastUpdate } = response;
+            if (response.userDetails) {
                 displayResults(userDetails);
-                // updateLastUpdated();
             } else {
                 displayUserNotfound();
+            }
+            if (lastUpdate) {
+                displayLastUpdated(lastUpdate);
+            } else {
+                clearLastUpdated();
             }
         }).getUserDetails(searchString);
     };
@@ -143,13 +147,13 @@
         resultDiv.innerHTML = 'User not found.';
     }
 
-    function updateLastUpdated() {
-        const now = new Date();
-        lastUpdatedDiv.innerHTML = `Last Updated: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+    function displayLastUpdated(lastUpdate) {
+        const date = new Date(lastUpdate);
+        lastUpdateDiv.innerHTML = `Last Updated: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
     }
 
     function clearLastUpdated() {
-        lastUpdatedDiv.innerHTML = '';
+        lastUpdateDiv.innerHTML = '';
     }
 
     function disableForm() {
