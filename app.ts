@@ -8,7 +8,7 @@ function doGet() {
     template.data = null
     return template
         .evaluate()
-        .setTitle('User Details Fetcher')
+        .setTitle('SAP and Commissary Status.')
         .setSandboxMode(HtmlService.SandboxMode.IFRAME)
 }
 
