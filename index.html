@@ -95,7 +95,7 @@
         <div id="loadingSpinner">Loading...</div>
     </div>
 
-    <div id="lastUpdated"></div>
+<!--    <div id="lastUpdated"></div>-->
 </div>
 
 <script>
@@ -103,12 +103,13 @@
     const form = document.getElementById('searchForm');
     const loadingSpinner = document.getElementById('loadingSpinner');
     const resultDiv = document.getElementById('result');
-    const lastUpdatedDiv = document.getElementById('lastUpdated');
+    // const lastUpdatedDiv = document.getElementById('lastUpdated');
 
     form.onsubmit = function(event) {
         event.preventDefault();
-        resultDiv.innerHTML = ''; // Clear previous results if any
-        disableForm()
+        clearResults();
+        disableForm();
+        // clearLastUpdated();
         showLoadingSpinner();
 
         // disable the submit button and input field
@@ -116,22 +117,16 @@
         form.getElementsByTagName('button')[0].disabled = true;
         const searchString = document.getElementsByName('searchString')[0].value;
 
-        let startSearchTime = new Date().getTime();
-        let startResponseTime = new Date().getTime();
-
         google.script.run.withSuccessHandler(function(response) {
-            console.log('Response time: ' + (new Date().getTime() - startResponseTime) + 'ms');
             enableForm();
             hideLoadingSpinner();
             if (response) {
                 const userDetails = JSON.parse(response);
                 displayResults(userDetails);
-                updateLastUpdated();
+                // updateLastUpdated();
             } else {
-                resultDiv.innerHTML = 'User not found.';
+                displayUserNotfound();
             }
-            let endSearchTime = new Date().getTime();
-            console.log('Search took ' + (endSearchTime - startSearchTime) + 'ms');
         }).getUserDetails(searchString);
     };
 
@@ -144,9 +139,17 @@
         resultDiv.innerHTML = html;
     }
 
+    function displayUserNotfound() {
+        resultDiv.innerHTML = 'User not found.';
+    }
+
     function updateLastUpdated() {
         const now = new Date();
         lastUpdatedDiv.innerHTML = `Last Updated: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+    }
+
+    function clearLastUpdated() {
+        lastUpdatedDiv.innerHTML = '';
     }
 
     function disableForm() {
@@ -160,9 +163,11 @@
     }
 
     function showLoadingSpinner() {
-        resultDiv.innerHTML = ''; // Clear previous results if any
         loadingSpinner.style.display = 'inline'; // Use 'block' for the spinner to occupy the full line
-        lastUpdatedDiv.innerHTML = ''; // Clear last updated
+    }
+
+    function clearResults() {
+        resultDiv.innerHTML = '';
     }
 
     function hideLoadingSpinner() {
