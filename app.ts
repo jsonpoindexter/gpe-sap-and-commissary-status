@@ -16,6 +16,7 @@ const CACHE_KEY_DASHBOARD = 'dashboardCache'
 
 interface DashboardCache {
     lastUpdate: string | null
+    headers: string[]
     data: Record<string, (string | null)[]>
 }
 
@@ -26,6 +27,7 @@ function refreshDashboardCache(): DashboardCache {
     const props = PropertiesService.getScriptProperties()
     const lastUpdate = props.getProperty('postProcessLastUpdate')
 
+    // pull headers once and seed in‑memory + ScriptCache
     const headers = getDashboardHeaders()
     const lastRow = DASHBOARD_SHEET.getLastRow()
     const values = DASHBOARD_SHEET
@@ -47,7 +49,7 @@ function refreshDashboardCache(): DashboardCache {
         data[nick] = cols
     })
 
-    return { lastUpdate, data }
+    return { lastUpdate, headers, data }
 }
 
 /**
@@ -61,19 +63,28 @@ function getDashboardCache(): DashboardCache {
     )
 
     if (cachedStr) {
-        Logger.log('Cache hit for dashboard data')
         const cached = JSON.parse(cachedStr) as DashboardCache
-        Logger.log(`Cache size: ${cachedStr.length} bytes`)
-        Logger.log(`Cache last update: ${cached.lastUpdate}, currentLastUpdate: ${currentLastUpdate}`)
-        if (cached.lastUpdate === currentLastUpdate) {
+
+        // Populate in‑memory headers if they aren’t set yet
+        if (cached.headers && DASHBOARD_HEADERS === null) {
+            DASHBOARD_HEADERS = cached.headers
+        }
+
+        const isFresh =
+            cached.headers !== undefined &&
+            cached.lastUpdate === currentLastUpdate
+
+        if (isFresh) {
+            // Logger.log('Dashboard cache hit – fresh')
             return cached
         }
+        // else fall through and rebuild
     }
 
     const fresh = refreshDashboardCache()
     // Store for up to 6 h (max TTL). 21600 s.
     cache.put(CACHE_KEY_DASHBOARD, JSON.stringify(fresh), 21600)
-    Logger.log(`Dashboard cache updated, size: ${JSON.stringify(fresh).length} bytes`)
+    // Logger.log(`Dashboard cache updated, size: ${JSON.stringify(fresh).length} bytes`)
     return fresh
 }
 
@@ -86,13 +97,31 @@ const DASHBOARD_SHEET = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(S
 /**
  * Fetch the header row once per execution context.
  */
+const CACHE_KEY_HEADERS = 'dashboardHeaders'
 let DASHBOARD_HEADERS: string[] | null = null
 function getDashboardHeaders(): string[] {
-    if (DASHBOARD_HEADERS === null) {
-        DASHBOARD_HEADERS = DASHBOARD_SHEET
-            .getRange(1, 1, 1, DASHBOARD_SHEET.getLastColumn())
-            .getValues()[0] as string[]
+    // In‑memory first
+    if (DASHBOARD_HEADERS !== null) {
+        // Logger.log('Header cache hit (memory)')
+        return DASHBOARD_HEADERS
     }
+
+    const cache = CacheService.getScriptCache()
+    const cached = cache.get(CACHE_KEY_HEADERS)
+
+    if (cached) {
+        // Logger.log('Header cache hit (ScriptCache)')
+        DASHBOARD_HEADERS = JSON.parse(cached) as string[]
+        return DASHBOARD_HEADERS
+    }
+
+    // Logger.log('Header cache miss – reading sheet')
+    DASHBOARD_HEADERS = DASHBOARD_SHEET
+        .getRange(1, 1, 1, DASHBOARD_SHEET.getLastColumn())
+        .getValues()[0] as string[]
+
+    cache.put(CACHE_KEY_HEADERS, JSON.stringify(DASHBOARD_HEADERS), 21600) // 6 h
+    // Logger.log(`Header cache stored, ${JSON.stringify(DASHBOARD_HEADERS).length} bytes`)
     return DASHBOARD_HEADERS
 }
 
@@ -100,7 +129,7 @@ function getDashboardHeaders(): string[] {
 // 2. you can show weekly shifts / food credits, those are in GPE 3035 in Eats tab. this will let people know what they need to add if any.
 
 function doGet() {
-    Logger.log('doGet called')
+    // Logger.log('doGet called')
     const template = HtmlService.createTemplateFromFile('index')
     template.data = null
     return template
@@ -117,7 +146,7 @@ interface UserDetails {
 function getUserDetails(nickname: string): UserDetails {
     const normalizedNick = nickname.toLowerCase().trim()
 
-    Logger.log(`getUserDetails called for: ${normalizedNick}`)
+    // Logger.log(`getUserDetails called for: ${normalizedNick}`)
 
     const cache = getDashboardCache()
 
@@ -128,7 +157,7 @@ function getUserDetails(nickname: string): UserDetails {
 
     const rowValues = cache.data[normalizedNick]
     if (rowValues) {
-        const headers = getDashboardHeaders()
+        const headers = cache.headers
         const userDetails: Record<string, string> = {}
         RESULT_COLUMNS.forEach((colIdx, j) => {
             const value = rowValues[j]
@@ -155,18 +184,18 @@ interface PostData {
 }
 
 function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.TextOutput {
-    Logger.log('doPost called')
+    // Logger.log('doPost called')
     const properties: GoogleAppsScript.Properties.Properties =
         PropertiesService.getScriptProperties()
     if (e.postData.type === 'application/json') {
         const postData: PostData = JSON.parse(e.postData.contents)
         const { secretKey, postProcessLastUpdate } = postData
         if (secretKey !== properties.getProperty('secretKey')) {
-            Logger.log('Unauthorized doPost request')
+            // Logger.log('Unauthorized doPost request')
             return ContentService.createTextOutput('Error: Unauthorized')
         }
         if (postProcessLastUpdate) {
-            Logger.log('Post Data: ', JSON.stringify(postData))
+            // Logger.log('Post Data: ', JSON.stringify(postData))
             properties.setProperty('postProcessLastUpdate', postProcessLastUpdate)
             return ContentService.createTextOutput('Update stored successfully.')
         }
