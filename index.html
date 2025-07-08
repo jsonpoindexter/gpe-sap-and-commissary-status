@@ -127,7 +127,8 @@
                         hideLoadingSpinner()
                         const { dashboardDetails, sapDetails, lastUpdate } = response
                         if (dashboardDetails && sapDetails) {
-                            displayDashboardDetails(dashboardDetails)
+                            displayUserNickname(dashboardDetails['User Nickname'])
+                            displayCommissaryDetails(dashboardDetails)
                             displaySapDetails(sapDetails)
                         } else {
                             displayUserNotfound()
@@ -141,24 +142,43 @@
                     .onSearch(searchString)
             }
 
-            function displayDashboardDetails(data) {
+            function displayUserNickname(nickname) {
                 let html = '<table>'
-                Object.keys(data).forEach(key => {
-                    html += `<tr><td>${key}</td><td>${data[key]}</td></tr>`
-                })
+                html += `<tr><td>User Nickname</td><td>${nickname}</td></tr>`
+                html += '</table>'
+                resultDiv.innerHTML += html
+            }
+
+            function displayCommissaryDetails(data) {
+                let html = '<table>'
+                html += `<tr><th colspan="2">Commissary Status</th></tr>`
+                html += `<tr><td>Eats Status Pre-Week</td><td>${data['Eats Status Pre-Week']}</td></tr>`
+                html +=  `<tr><td>Eats Status Event Week</td><td>${data['Eats Status Event Week']}</td></tr>`
+                html += `<tr><td>Eats Status Post Event</td><td>${data['Eats Status Post Event']}</td></tr>`
                 html += '</table>'
                 resultDiv.innerHTML += html
             }
 
             function displaySapDetails(data) {
-                const preEventRequirementsProgress = data['Pre-event shifts scheduled'] /data['Pre-event shifts required for SAP']
-                const mainEventRequirementsProgress = data['Main-event shifts scheduled'] / data.mainEventShiftsRequired
+                const preEventRequirementsProgress =
+                    data['Pre-event shifts scheduled'] /
+                    data['Pre-event shifts required for SAP']
+                const mainEventRequirementsProgress =
+                    data['Main-event shifts scheduled'] / data.mainEventShiftsRequired
                 let html = '<table>'
                 html += `<tr><th colspan="2">SAP Status</th></tr>`
                 html += `<tr><td>First shift day scheduled</td><td>${data['First shift day scheduled']}</td></tr>`
                 html += `<tr><td>Qualifies for Pre-event day off</td><td>${data['Qualifies for Pre-event day off']}</td></tr>`
-                html += `<tr><td>Pre-event shifts scheduled</td><td style="color: ${progressToColor(preEventRequirementsProgress)}">${data['Pre-event shifts scheduled']} / ${data[`Pre-event shifts required for SAP`]}</td></tr>`
-                html += `<tr><td>Main-event shifts scheduled</td><td style="color: ${progressToColor(mainEventRequirementsProgress)}">${data['Main-event shifts scheduled']} / ${data.mainEventShiftsRequired}</td></tr>`
+                html += `<tr><td>Pre-event shifts scheduled</td><td style="color: ${progressToColor(
+                    preEventRequirementsProgress,
+                )}">${data['Pre-event shifts scheduled']} / ${
+                    data[`Pre-event shifts required for SAP`]
+                }</td></tr>`
+                html += `<tr><td>Main-event shifts scheduled</td><td style="color: ${progressToColor(
+                    mainEventRequirementsProgress,
+                )}">${data['Main-event shifts scheduled']} / ${
+                    data.mainEventShiftsRequired
+                }</td></tr>`
                 html += '</table>'
                 resultDiv.innerHTML += html
             }
