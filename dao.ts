@@ -16,17 +16,33 @@ function getSnapshot(which: keyof typeof Constants.SHEETS): Loaders.Snapshot {
 export function getUserDetails(
     nickname: string,
 ) {
-    const which = 'DASHBOARD';
-    const snap = getSnapshot(which)
-    const norm = nickname.toLowerCase().trim()
-    const row = snap.rows[norm]
+    const normalizedNickname = nickname.toLowerCase().trim()
 
-    if (!row) return { userDetails: null, lastUpdate: snap.lastUpdate }
+    let which = 'DASHBOARD';
+    const dashboardSnapshot = getSnapshot(which as keyof typeof Constants.SHEETS)
+    const dashboardRow = dashboardSnapshot.rows[normalizedNickname]
+    if (!dashboardRow) return { userDetails: null, lastUpdate: dashboardSnapshot.lastUpdate }
 
-    const cfg = Constants.SHEETS[which]
+    const dashboardConfig = Constants.SHEETS[which]
     const userDetails: Record<string,string> = {}
-    cfg.dataCols.forEach((colIdx, j)=>{
-        userDetails[snap.headers[colIdx]] = row[j] ?? ''
+    dashboardConfig.dataCols.forEach((colIdx, j)=>{
+        userDetails[dashboardSnapshot.headers[colIdx]] = dashboardRow[j] ?? ''
     })
-    return { userDetails, lastUpdate: snap.lastUpdate }
+
+    // Add SAP details to userDetails
+    which = 'SAP';
+    const sapSnap = getSnapshot(which as keyof typeof Constants.SHEETS)
+    const sapRow = sapSnap.rows[normalizedNickname]
+    Logger.log(`SAP Row for ${normalizedNickname}:  ${JSON.stringify(sapRow)}`)
+    Logger.log(`SAP Headers: ${JSON.stringify(sapSnap.headers)}`)
+    if (sapRow) {
+        const sapConfig = Constants.SHEETS[which]
+        // Add SAP details to userDetails
+        sapConfig.dataCols.forEach((colIdx, j) => {
+            userDetails[sapSnap.headers[colIdx]] = sapRow[j] ?? ''
+        })
+    }
+
+
+    return { userDetails, lastUpdate: dashboardSnapshot.lastUpdate }
 }
