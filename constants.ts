@@ -15,7 +15,7 @@ namespace Constants {
         return `${name.toLowerCase()}Details`
     }
 
-    export const SHEETS: Record<'DASHBOARD' | 'SAP', SheetConfig> = {
+    export const SHEETS: Record<'DASHBOARD' | 'SAP' | 'EATS', SheetConfig> = {
         DASHBOARD: {
             name: 'Dashboard',
             propertyName: nameToPropertyName('Dashboard'),
@@ -31,6 +31,15 @@ namespace Constants {
             cacheKey: 'cache_sap',
             mainEventShiftsRequired: 3
         },
+        EATS: {
+            name: 'Eats',
+            propertyName: nameToPropertyName('EATS'),
+            nicknameCol: 1,       // column B => index 4
+            dataCols: [
+                7, 8, 9
+            ], // H-J
+            cacheKey: 'cache_eats',
+        }
     };
 
     export const CACHE_TTL = 21600   // 6 h

@@ -7,4 +7,8 @@ namespace Cache {
     export function write<T>(key: string, value: T, ttl = Constants.CACHE_TTL): void {
         CacheService.getScriptCache().put(key, JSON.stringify(value), ttl)
     }
+
+    export function clear(key: string): void {
+        CacheService.getScriptCache().remove(key)
+    }
 }

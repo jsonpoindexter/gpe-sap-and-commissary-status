@@ -17,11 +17,15 @@ export function onSearch(uniqueId: string) {
     const normalizedId = uniqueId.toLowerCase().trim()
     const dashboardDetails = getSheetDetails(normalizedId, 'DASHBOARD')
     const sapDetails = getSheetDetails(normalizedId, 'SAP')
-    return {
+    const eatsDetails = getSheetDetails(normalizedId, 'EATS')
+    const response = {
         ...dashboardDetails,
         ...sapDetails,
+        ...eatsDetails,
         lastUpdate: dashboardDetails.lastUpdate || sapDetails.lastUpdate,
     }
+    Logger.log(`onSearch response: ${JSON.stringify(response)}`)
+    return response
 }
 
 export function getSheetDetails(
