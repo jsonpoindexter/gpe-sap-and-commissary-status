@@ -127,9 +127,10 @@
                         hideLoadingSpinner()
                         const { dashboardDetails, sapDetails, lastUpdate } = response
                         if (dashboardDetails && sapDetails) {
-                            displayUserNickname(dashboardDetails['User Nickname'])
-                            displayCommissaryDetails(dashboardDetails)
-                            displaySapDetails(sapDetails)
+                            displayAllDetails(
+                                dashboardDetails,
+                                sapDetails
+                            )
                         } else {
                             displayUserNotfound()
                         }
@@ -142,46 +143,37 @@
                     .onSearch(searchString)
             }
 
-            function displayUserNickname(nickname) {
-                let html = '<table>'
-                html += `<tr><td>User Nickname</td><td>${nickname}</td></tr>`
-                html += '</table>'
-                resultDiv.innerHTML += html
-            }
+           function displayAllDetails(commissaryData, sapData) {
+               let html = '<table>'
 
-            function displayCommissaryDetails(data) {
-                let html = '<table>'
-                html += `<tr><th colspan="2">Commissary Status</th></tr>`
-                html += `<tr><td>Eats Status Pre-Week</td><td>${data['Eats Status Pre-Week']}</td></tr>`
-                html +=  `<tr><td>Eats Status Event Week</td><td>${data['Eats Status Event Week']}</td></tr>`
-                html += `<tr><td>Eats Status Post Event</td><td>${data['Eats Status Post Event']}</td></tr>`
-                html += '</table>'
-                resultDiv.innerHTML += html
-            }
+               // User Nickname
+               html += `<tr><th colspan="2">User Details</th></tr>`
+               html += `<tr><td>User Nickname</td><td>${commissaryData['User Nickname']}</td></tr>`
 
-            function displaySapDetails(data) {
-                const preEventRequirementsProgress =
-                    data['Pre-event shifts scheduled'] /
-                    data['Pre-event shifts required for SAP']
-                const mainEventRequirementsProgress =
-                    data['Main-event shifts scheduled'] / data.mainEventShiftsRequired
-                let html = '<table>'
-                html += `<tr><th colspan="2">SAP Status</th></tr>`
-                html += `<tr><td>First shift day scheduled</td><td>${data['First shift day scheduled']}</td></tr>`
-                html += `<tr><td>Qualifies for Pre-event day off</td><td>${data['Qualifies for Pre-event day off']}</td></tr>`
-                html += `<tr><td>Pre-event shifts scheduled</td><td style="color: ${progressToColor(
-                    preEventRequirementsProgress,
-                )}">${data['Pre-event shifts scheduled']} / ${
-                    data[`Pre-event shifts required for SAP`]
-                }</td></tr>`
-                html += `<tr><td>Main-event shifts scheduled</td><td style="color: ${progressToColor(
-                    mainEventRequirementsProgress,
-                )}">${data['Main-event shifts scheduled']} / ${
-                    data.mainEventShiftsRequired
-                }</td></tr>`
-                html += '</table>'
-                resultDiv.innerHTML += html
-            }
+               // Commissary Status
+               html += `<tr><th colspan="2">Commissary Status</th></tr>`
+               html += `<tr><td>Eats Status Pre-Week</td><td>${commissaryData['Eats Status Pre-Week']}</td></tr>`
+               html += `<tr><td>Eats Status Event Week</td><td>${commissaryData['Eats Status Event Week']}</td></tr>`
+               html += `<tr><td>Eats Status Post Event</td><td>${commissaryData['Eats Status Post Event']}</td></tr>`
+
+               // SAP Status
+               const preEventRequirementsProgress =
+                   sapData['Pre-event shifts scheduled'] /
+                   sapData['Pre-event shifts required for SAP']
+               const mainEventRequirementsProgress =
+                   sapData['Main-event shifts scheduled'] / sapData.mainEventShiftsRequired
+
+               html += `<tr><th colspan="2">SAP Status</th></tr>`
+               html += `<tr><td>SAP eligible</td><td>${commissaryData['SAP eligible']}</td></tr>`
+               html += `<tr><td>Calculated EA Date</td><td>${commissaryData['Calculated EA Date']}</td></tr>`
+               html += `<tr><td>First shift day scheduled</td><td>${sapData['First shift day scheduled']}</td></tr>`
+               html += `<tr><td>Qualifies for Pre-Week day off</td><td>${sapData['Qualifies for Pre-event day off']}</td></tr>`
+               html += `<tr><td>Pre-Week shifts scheduled / required</td><td style="color: ${progressToColor(preEventRequirementsProgress)}">${sapData['Pre-event shifts scheduled']} / ${sapData['Pre-event shifts required for SAP']}</td></tr>`
+               html += `<tr><td>Event Week shifts scheduled / required</td><td style="color: ${progressToColor(mainEventRequirementsProgress)}">${sapData['Main-event shifts scheduled']} / ${sapData.mainEventShiftsRequired}</td></tr>`
+
+               html += '</table>'
+               resultDiv.innerHTML = html
+           }
 
             function progressToColor(progress) {
                 if (progress >= 1) return 'green'
