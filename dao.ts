@@ -37,6 +37,9 @@ export function getSheetDetails(
     const details: Record<string,string> = {}
     sheetConfig.dataCols.forEach((column, index)=>{
         details[snapshot.headers[column]] = row[index] ?? ''
-    })
+    });
+
+    if (which === 'SAP') details.mainEventShiftsRequired = sheetConfig.mainEventShiftsRequired.toString()
+
     return { [`${sheetConfig.propertyName}`]: details, lastUpdate: snapshot.lastUpdate }
 }

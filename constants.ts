@@ -8,6 +8,7 @@ namespace Constants {
         nicknameCol: number         // 0-based
         dataCols: number[]          // 0-based
         cacheKey: string            // ScriptCache key
+        mainEventShiftsRequired?: number // Optional, used for SAP sheet
     }
 
     function nameToPropertyName(name: string): string {
@@ -28,9 +29,9 @@ namespace Constants {
             nicknameCol: 1,           // column B => index 1
             dataCols: [4, 5, 6, 7, 8, 9, 10], // E–K
             cacheKey: 'cache_sap',
+            mainEventShiftsRequired: 3
         },
     };
-
 
     export const CACHE_TTL = 21600   // 6 h
 }

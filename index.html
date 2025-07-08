@@ -125,9 +125,10 @@
                     .withSuccessHandler(function (response) {
                         enableForm()
                         hideLoadingSpinner()
-                        const { dashboardDetails, lastUpdate } = response
-                        if (dashboardDetails) {
+                        const { dashboardDetails, sapDetails, lastUpdate } = response
+                        if (dashboardDetails && sapDetails) {
                             displayDashboardDetails(dashboardDetails)
+                            displaySapDetails(sapDetails)
                         } else {
                             displayUserNotfound()
                         }
@@ -146,7 +147,26 @@
                     html += `<tr><td>${key}</td><td>${data[key]}</td></tr>`
                 })
                 html += '</table>'
-                resultDiv.innerHTML = html
+                resultDiv.innerHTML += html
+            }
+
+            function displaySapDetails(data) {
+                const preEventRequirementsProgress = data['Pre-event shifts scheduled'] /data['Pre-event shifts required for SAP']
+                const mainEventRequirementsProgress = data['Main-event shifts scheduled'] / data.mainEventShiftsRequired
+                let html = '<table>'
+                html += `<tr><th colspan="2">SAP Status</th></tr>`
+                html += `<tr><td>First shift day scheduled</td><td>${data['First shift day scheduled']}</td></tr>`
+                html += `<tr><td>Qualifies for Pre-event day off</td><td>${data['Qualifies for Pre-event day off']}</td></tr>`
+                html += `<tr><td>Pre-event shifts scheduled</td><td style="color: ${progressToColor(preEventRequirementsProgress)}">${data['Pre-event shifts scheduled']} / ${data[`Pre-event shifts required for SAP`]}</td></tr>`
+                html += `<tr><td>Main-event shifts scheduled</td><td style="color: ${progressToColor(mainEventRequirementsProgress)}">${data['Main-event shifts scheduled']} / ${data.mainEventShiftsRequired}</td></tr>`
+                html += '</table>'
+                resultDiv.innerHTML += html
+            }
+
+            function progressToColor(progress) {
+                if (progress >= 1) return 'green'
+                if (progress >= 0.5) return 'yellow'
+                return 'red'
             }
 
             function displayUserNotfound() {
