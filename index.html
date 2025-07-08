@@ -152,9 +152,9 @@
 
                // Commissary Status
                html += `<tr><th colspan="2">Commissary Status</th></tr>`
-               html += `<tr><td>Eats Status Pre-Week</td><td>${commissaryData['Eats Status Pre-Week']}</td></tr>`
-               html += `<tr><td>Eats Status Event Week</td><td>${commissaryData['Eats Status Event Week']}</td></tr>`
-               html += `<tr><td>Eats Status Post Event</td><td>${commissaryData['Eats Status Post Event']}</td></tr>`
+               html += `<tr><td>Eats Status Pre-Week</td><td style="color: ${booleanStrToColor(commissaryData['Eats Status Pre-Week'])}">${commissaryData['Eats Status Pre-Week']}</td></tr>`
+               html += `<tr><td>Eats Status Event Week</td><td style="color: ${booleanStrToColor(commissaryData['Eats Status Event Week'])}">${commissaryData['Eats Status Event Week']}</td></tr>`
+               html += `<tr><td>Eats Status Post Event</td><td style="color: ${booleanStrToColor(commissaryData['Eats Status Post Event'])}">${commissaryData['Eats Status Post Event']}</td></tr>`
 
                // SAP Status
                const preEventRequirementsProgress =
@@ -164,7 +164,7 @@
                    sapData['Main-event shifts scheduled'] / sapData.mainEventShiftsRequired
 
                html += `<tr><th colspan="2">SAP Status</th></tr>`
-               html += `<tr><td>SAP eligible</td><td>${commissaryData['SAP eligible']}</td></tr>`
+               html += `<tr><td>SAP eligible</td><td style="color: ${booleanStrToColor(commissaryData['SAP eligible'])}">${commissaryData['SAP eligible']}</td></tr>`
                html += `<tr><td>Calculated EA Date</td><td>${commissaryData['Calculated EA Date']}</td></tr>`
                html += `<tr><td>First shift day scheduled</td><td>${sapData['First shift day scheduled']}</td></tr>`
                html += `<tr><td>Qualifies for Pre-Week day off</td><td>${sapData['Qualifies for Pre-event day off']}</td></tr>`
@@ -179,6 +179,10 @@
                 if (progress >= 1) return 'green'
                 if (progress >= 0.5) return 'yellow'
                 return 'red'
+            }
+
+            function booleanStrToColor(value) {
+                return value === 'TRUE' ? 'green' : 'red'
             }
 
             function displayUserNotfound() {
