@@ -3,8 +3,8 @@ import { getSheetDetails } from './dao'
 // Apps Script uses the global object; `globalThis` is the safest alias.
 const g = globalThis as any
 g.doGet = () => {
-    const t = HtmlService.createTemplateFromFile('index')
-    return t.evaluate().setTitle('Status').setSandboxMode(HtmlService.SandboxMode.IFRAME)
+    const htmlTemplate = HtmlService.createTemplateFromFile('index')
+    return htmlTemplate.evaluate().setTitle('Commissary and SAP Status').setSandboxMode(HtmlService.SandboxMode.IFRAME)
 }
 
 g.doPost = (e: GoogleAppsScript.Events.DoPost) =>doPost(e)
