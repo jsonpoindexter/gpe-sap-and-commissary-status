@@ -121,9 +121,9 @@
         google.script.run.withSuccessHandler(function(response) {
             enableForm();
             hideLoadingSpinner();
-            const { userDetails, lastUpdate } = response;
-            if (response.userDetails) {
-                displayResults(userDetails);
+            const { dashboardDetails, lastUpdate } = response;
+            if (dashboardDetails) {
+                displayDashboardDetails(dashboardDetails);
             } else {
                 displayUserNotfound();
             }
@@ -132,10 +132,10 @@
             } else {
                 clearLastUpdated();
             }
-        }).getUserDetails(searchString);
+        }).onSearch(searchString);
     };
 
-    function displayResults(data) {
+    function displayDashboardDetails(data) {
         let html = '<table>';
         Object.keys(data).forEach(key => {
             html += `<tr><td>${key}</td><td>${data[key]}</td></tr>`;

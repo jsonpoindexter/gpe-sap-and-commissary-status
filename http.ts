@@ -1,4 +1,4 @@
-import { getUserDetails } from './dao'
+import { getSheetDetails } from './dao'
 
 // Apps Script uses the global object; `globalThis` is the safest alias.
 const g = globalThis as any
