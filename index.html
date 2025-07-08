@@ -1,183 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>SAP and Commissary Status</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: black;;
-            color: white; /* Light text */
-            background-image: url('https://babalooey-static.s3-us-west-2.amazonaws.com/Images/blue_patterns_wallpaper_DARK.jpg');
-            background-repeat: no-repeat;
-            background-size: cover;
-            text-align: center; /* Centering text */
-        }
-        #searchForm {
-            margin: 50px auto; /* More margin, centering */
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
-            border-radius: 10px;
-            display: inline-block;
-        }
-        input[type="text"], button {
-            margin: 10px 0;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 5px;
-        }
-        input[type="text"] {
-            width: 300px; /* Larger input field */
-        }
-        button {
-            cursor: pointer;
-            background-color: #0a58ca;
-            color: white;
-            border: none;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #0c46a0;
-        }
-        #resultContainer {
-            text-align: center; /* Ensures content is centered */
-            min-height: 50px; /* Provides a minimum height for better layout */
-            position: relative; /* Needed for absolute positioning of children */
-            width: 100%; /* Full width to handle centering */
-        }
-        #loadingSpinner {
-            display: none;
-            position: absolute; /* Absolute positioning within the container */
-            top: 50%; /* Center vertically */
-            left: 50%; /* Center horizontally */
-            transform: translate(-50%, -50%); /* Adjust to exact center */
-            color: white;
-            font-size: 18px;
-        }
-        #result {
-            width: 100%; /* Ensures the table is centered within the container */
-        }
-        #result table {
-            margin: auto; /* Center the table on the page */
-            width: 50%; /* Set the width to 50% of its container */
-            border-collapse: collapse;
-            background: rgba(255, 255, 255, 0.1); /* Light translucent background */
-            color: white; /* White text color */
-            border-radius: 8px; /* Rounded corners */
-            overflow: hidden; /* Ensures the border radius applies */
-        }
-        #result th, #result td {
-            text-align: left;
-            padding: 12px 20px; /* More padding for a better look */
-            border-bottom: 1px solid #ddd; /* Subtle border for the bottom */
-            border-color: rgba(255, 255, 255, 0.2); /* Light border color */
-        }
-        #result th {
-            background-color: rgba(0, 0, 0, 0.4); /* Darker background for headers */
-        }
-        #lastUpdate {
-            margin-top: 20px;
-            color: lightgray;
-        }
-    </style>
-</head>
-<body>
-<div style="padding-top: 100px;">
-    <h1>[2025] SAP and Commissary Status</h1>
-    <div id="lastUpdate"></div>
-    <form id="searchForm">
-        <label>
-            <input type="text" name="searchString" placeholder="Enter Babalooey nick">
-        </label>
-        <button type="submit">Search</button>
-    </form>
-    <div id="resultContainer">
-        <div id="result"></div>
-        <div id="loadingSpinner">Loading...</div>
-    </div>
-
-
-</div>
-
-<script>
-
-    const form = document.getElementById('searchForm');
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    const resultDiv = document.getElementById('result');
-    const lastUpdateDiv = document.getElementById('lastUpdate');
-
-    form.onsubmit = function(event) {
-        event.preventDefault();
-        clearResults();
-        disableForm();
-        clearLastUpdated();
-        showLoadingSpinner();
-
-        // disable the submit button and input field
-        form.getElementsByTagName('input')[0].disabled = true;
-        form.getElementsByTagName('button')[0].disabled = true;
-        const searchString = document.getElementsByName('searchString')[0].value;
-
-        google.script.run.withSuccessHandler(function(response) {
-            enableForm();
-            hideLoadingSpinner();
-            const { dashboardDetails, lastUpdate } = response;
-            if (dashboardDetails) {
-                displayDashboardDetails(dashboardDetails);
-            } else {
-                displayUserNotfound();
+    <head>
+        <title>SAP and Commissary Status</title>
+        <style>
+            body {
+                font-family: 'Arial', sans-serif;
+                background-color: black;
+                color: white; /* Light text */
+                background-image: url('https://babalooey-static.s3-us-west-2.amazonaws.com/Images/blue_patterns_wallpaper_DARK.jpg');
+                background-repeat: no-repeat;
+                background-size: cover;
+                text-align: center; /* Centering text */
             }
-            if (lastUpdate) {
-                displayLastUpdated(lastUpdate);
-            } else {
-                clearLastUpdated();
+            #searchForm {
+                margin: 50px auto; /* More margin, centering */
+                padding: 20px;
+                background: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+                border-radius: 10px;
+                display: inline-block;
             }
-        }).onSearch(searchString);
-    };
+            input[type='text'],
+            button {
+                margin: 10px 0;
+                padding: 15px 20px;
+                border: none;
+                border-radius: 5px;
+            }
+            input[type='text'] {
+                width: 300px; /* Larger input field */
+            }
+            button {
+                cursor: pointer;
+                background-color: #0a58ca;
+                color: white;
+                border: none;
+                font-size: 16px;
+                transition: background-color 0.3s;
+            }
+            button:hover {
+                background-color: #0c46a0;
+            }
+            #resultContainer {
+                text-align: center; /* Ensures content is centered */
+                min-height: 50px; /* Provides a minimum height for better layout */
+                position: relative; /* Needed for absolute positioning of children */
+                width: 100%; /* Full width to handle centering */
+            }
+            #loadingSpinner {
+                display: none;
+                position: absolute; /* Absolute positioning within the container */
+                top: 50%; /* Center vertically */
+                left: 50%; /* Center horizontally */
+                transform: translate(-50%, -50%); /* Adjust to exact center */
+                color: white;
+                font-size: 18px;
+            }
+            #result {
+                width: 100%; /* Ensures the table is centered within the container */
+            }
+            #result table {
+                margin: auto; /* Center the table on the page */
+                width: 50%; /* Set the width to 50% of its container */
+                border-collapse: collapse;
+                background: rgba(255, 255, 255, 0.1); /* Light translucent background */
+                color: white; /* White text color */
+                border-radius: 8px; /* Rounded corners */
+                overflow: hidden; /* Ensures the border radius applies */
+            }
+            #result th,
+            #result td {
+                text-align: left;
+                padding: 12px 20px; /* More padding for a better look */
+                border-bottom: 1px solid #ddd; /* Subtle border for the bottom */
+                border-color: rgba(255, 255, 255, 0.2); /* Light border color */
+            }
+            #result th {
+                background-color: rgba(0, 0, 0, 0.4); /* Darker background for headers */
+            }
+            #lastUpdate {
+                margin-top: 20px;
+                color: lightgray;
+            }
+        </style>
+    </head>
+    <body>
+        <div style="padding-top: 100px">
+            <h1>[2025] SAP and Commissary Status</h1>
+            <div id="lastUpdate"></div>
+            <form id="searchForm">
+                <label>
+                    <input
+                        type="text"
+                        name="searchString"
+                        placeholder="Enter Babalooey nick"
+                    />
+                </label>
+                <button type="submit">Search</button>
+            </form>
+            <div id="resultContainer">
+                <div id="result"></div>
+                <div id="loadingSpinner">Loading...</div>
+            </div>
+        </div>
 
-    function displayDashboardDetails(data) {
-        let html = '<table>';
-        Object.keys(data).forEach(key => {
-            html += `<tr><td>${key}</td><td>${data[key]}</td></tr>`;
-        });
-        html += '</table>';
-        resultDiv.innerHTML = html;
-    }
+        <script>
+            const form = document.getElementById('searchForm')
+            const loadingSpinner = document.getElementById('loadingSpinner')
+            const resultDiv = document.getElementById('result')
+            const lastUpdateDiv = document.getElementById('lastUpdate')
 
-    function displayUserNotfound() {
-        resultDiv.innerHTML = 'User not found.';
-    }
+            form.onsubmit = function (event) {
+                event.preventDefault()
+                clearResults()
+                disableForm()
+                clearLastUpdated()
+                showLoadingSpinner()
 
-    function displayLastUpdated(lastUpdate) {
-        const date = new Date(lastUpdate);
-        lastUpdateDiv.innerHTML = `Last Updated: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-    }
+                // disable the submit button and input field
+                form.getElementsByTagName('input')[0].disabled = true
+                form.getElementsByTagName('button')[0].disabled = true
+                const searchString = document.getElementsByName('searchString')[0].value
 
-    function clearLastUpdated() {
-        lastUpdateDiv.innerHTML = '';
-    }
+                google.script.run
+                    .withSuccessHandler(function (response) {
+                        enableForm()
+                        hideLoadingSpinner()
+                        const { dashboardDetails, lastUpdate } = response
+                        if (dashboardDetails) {
+                            displayDashboardDetails(dashboardDetails)
+                        } else {
+                            displayUserNotfound()
+                        }
+                        if (lastUpdate) {
+                            displayLastUpdated(lastUpdate)
+                        } else {
+                            clearLastUpdated()
+                        }
+                    })
+                    .onSearch(searchString)
+            }
 
-    function disableForm() {
-        form.getElementsByTagName('input')[0].disabled = true;
-        form.getElementsByTagName('button')[0].disabled = true;
-    }
+            function displayDashboardDetails(data) {
+                let html = '<table>'
+                Object.keys(data).forEach(key => {
+                    html += `<tr><td>${key}</td><td>${data[key]}</td></tr>`
+                })
+                html += '</table>'
+                resultDiv.innerHTML = html
+            }
 
-    function enableForm() {
-        form.getElementsByTagName('input')[0].disabled = false;
-        form.getElementsByTagName('button')[0].disabled = false;
-    }
+            function displayUserNotfound() {
+                resultDiv.innerHTML = 'User not found.'
+            }
 
-    function showLoadingSpinner() {
-        loadingSpinner.style.display = 'inline'; // Use 'block' for the spinner to occupy the full line
-    }
+            function displayLastUpdated(lastUpdate) {
+                const date = new Date(lastUpdate)
+                lastUpdateDiv.innerHTML = `Last Updated: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`
+            }
 
-    function clearResults() {
-        resultDiv.innerHTML = '';
-    }
+            function clearLastUpdated() {
+                lastUpdateDiv.innerHTML = ''
+            }
 
-    function hideLoadingSpinner() {
-        loadingSpinner.style.display = 'none';
-    }
-</script>
-</body>
+            function disableForm() {
+                form.getElementsByTagName('input')[0].disabled = true
+                form.getElementsByTagName('button')[0].disabled = true
+            }
+
+            function enableForm() {
+                form.getElementsByTagName('input')[0].disabled = false
+                form.getElementsByTagName('button')[0].disabled = false
+            }
+
+            function showLoadingSpinner() {
+                loadingSpinner.style.display = 'inline' // Use 'block' for the spinner to occupy the full line
+            }
+
+            function clearResults() {
+                resultDiv.innerHTML = ''
+            }
+
+            function hideLoadingSpinner() {
+                loadingSpinner.style.display = 'none'
+            }
+        </script>
+    </body>
 </html>
