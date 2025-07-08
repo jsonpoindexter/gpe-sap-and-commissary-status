@@ -1,224 +1,260 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>SAP and Commissary Status</title>
-        <style>
-            body {
-                font-family: 'Arial', sans-serif;
-                background-color: black;
-                color: white; /* Light text */
-                background-image: url('https://babalooey-static.s3-us-west-2.amazonaws.com/Images/blue_patterns_wallpaper_DARK.jpg');
-                background-repeat: no-repeat;
-                background-size: cover;
-                text-align: center; /* Centering text */
-            }
-            #searchForm {
-                margin: 50px auto; /* More margin, centering */
-                padding: 20px;
-                background: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
-                border-radius: 10px;
-                display: inline-block;
-            }
-            input[type='text'],
-            button {
-                margin: 10px 0;
-                padding: 15px 20px;
-                border: none;
-                border-radius: 5px;
-            }
-            input[type='text'] {
-                width: 300px; /* Larger input field */
-            }
-            button {
-                cursor: pointer;
-                background-color: #0a58ca;
-                color: white;
-                border: none;
-                font-size: 16px;
-                transition: background-color 0.3s;
-            }
-            button:hover {
-                background-color: #0c46a0;
-            }
-            #resultContainer {
-                text-align: center; /* Ensures content is centered */
-                min-height: 50px; /* Provides a minimum height for better layout */
-                position: relative; /* Needed for absolute positioning of children */
-                width: 100%; /* Full width to handle centering */
-            }
-            #loadingSpinner {
-                display: none;
-                position: absolute; /* Absolute positioning within the container */
-                top: 50%; /* Center vertically */
-                left: 50%; /* Center horizontally */
-                transform: translate(-50%, -50%); /* Adjust to exact center */
-                color: white;
-                font-size: 18px;
-            }
-            #result {
-                width: 100%; /* Ensures the table is centered within the container */
-            }
-            #result table {
-                margin: auto; /* Center the table on the page */
-                width: 50%; /* Set the width to 50% of its container */
-                border-collapse: collapse;
-                background: rgba(255, 255, 255, 0.1); /* Light translucent background */
-                color: white; /* White text color */
-                border-radius: 8px; /* Rounded corners */
-                overflow: hidden; /* Ensures the border radius applies */
-            }
-            #result th,
-            #result td {
-                text-align: left;
-                padding: 12px 20px; /* More padding for a better look */
-                border-bottom: 1px solid #ddd; /* Subtle border for the bottom */
-                border-color: rgba(255, 255, 255, 0.2); /* Light border color */
-            }
-            #result th {
-                background-color: rgba(0, 0, 0, 0.4); /* Darker background for headers */
-            }
-            #lastUpdate {
-                margin-top: 20px;
-                color: lightgray;
-            }
-        </style>
-    </head>
-    <body>
-        <div style="padding-top: 100px">
-            <h1>[2025] SAP and Commissary Status</h1>
-            <div id="lastUpdate"></div>
-            <form id="searchForm">
-                <label>
-                    <input
-                        type="text"
-                        name="searchString"
-                        placeholder="Enter Babalooey nick"
-                    />
-                </label>
-                <button type="submit">Search</button>
-            </form>
-            <div id="resultContainer">
-                <div id="result"></div>
-                <div id="loadingSpinner">Loading...</div>
-            </div>
-        </div>
+<head>
+    <title>SAP and Commissary Status</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: black;
+            color: white; /* Light text */
+            background-image: url('https://babalooey-static.s3-us-west-2.amazonaws.com/Images/blue_patterns_wallpaper_DARK.jpg');
+            background-repeat: no-repeat;
+            background-size: cover;
+            text-align: center; /* Centering text */
+        }
 
-        <script>
-            const form = document.getElementById('searchForm')
-            const loadingSpinner = document.getElementById('loadingSpinner')
-            const resultDiv = document.getElementById('result')
-            const lastUpdateDiv = document.getElementById('lastUpdate')
+        #searchForm {
+            margin: 50px auto; /* More margin, centering */
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+            border-radius: 10px;
+            display: inline-block;
+        }
 
-            form.onsubmit = function (event) {
-                event.preventDefault()
-                clearResults()
-                disableForm()
-                clearLastUpdated()
-                showLoadingSpinner()
+        input[type='text'],
+        button {
+            margin: 10px 0;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 5px;
+        }
 
-                // disable the submit button and input field
-                form.getElementsByTagName('input')[0].disabled = true
-                form.getElementsByTagName('button')[0].disabled = true
-                const searchString = document.getElementsByName('searchString')[0].value
+        input[type='text'] {
+            width: 300px; /* Larger input field */
+        }
 
-                google.script.run
-                    .withSuccessHandler(function (response) {
-                        enableForm()
-                        hideLoadingSpinner()
-                        const { dashboardDetails, sapDetails, lastUpdate } = response
-                        if (dashboardDetails && sapDetails) {
-                            displayAllDetails(
-                                dashboardDetails,
-                                sapDetails
-                            )
-                        } else {
-                            displayUserNotfound()
-                        }
-                        if (lastUpdate) {
-                            displayLastUpdated(lastUpdate)
-                        } else {
-                            clearLastUpdated()
-                        }
-                    })
-                    .onSearch(searchString)
-            }
+        button {
+            cursor: pointer;
+            background-color: #0a58ca;
+            color: white;
+            border: none;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
 
-           function displayAllDetails(commissaryData, sapData) {
-               let html = '<table>'
+        button:hover {
+            background-color: #0c46a0;
+        }
 
-               // User Nickname
-               html += `<tr><th colspan="2">User Details</th></tr>`
-               html += `<tr><td>User Nickname</td><td>${commissaryData['User Nickname']}</td></tr>`
+        #resultContainer {
+            text-align: center; /* Ensures content is centered */
+            min-height: 50px; /* Provides a minimum height for better layout */
+            position: relative; /* Needed for absolute positioning of children */
+            width: 100%; /* Full width to handle centering */
+        }
 
-               // Commissary Status
-               html += `<tr><th colspan="2">Commissary Status</th></tr>`
-               html += `<tr><td>Eats Status Pre-Week</td><td style="color: ${booleanStrToColor(commissaryData['Eats Status Pre-Week'])}">${commissaryData['Eats Status Pre-Week']}</td></tr>`
-               html += `<tr><td>Eats Status Event Week</td><td style="color: ${booleanStrToColor(commissaryData['Eats Status Event Week'])}">${commissaryData['Eats Status Event Week']}</td></tr>`
-               html += `<tr><td>Eats Status Post Event</td><td style="color: ${booleanStrToColor(commissaryData['Eats Status Post Event'])}">${commissaryData['Eats Status Post Event']}</td></tr>`
+        #loadingSpinner {
+            display: none;
+            position: absolute; /* Absolute positioning within the container */
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Adjust to exact center */
+            color: white;
+            font-size: 18px;
+        }
 
-               // SAP Status
-               const preEventRequirementsProgress =
-                   sapData['Pre-event shifts scheduled'] /
-                   sapData['Pre-event shifts required for SAP']
-               const mainEventRequirementsProgress =
-                   sapData['Main-event shifts scheduled'] / sapData.mainEventShiftsRequired
+        #result {
+            width: 100%; /* Ensures the table is centered within the container */
+        }
 
-               html += `<tr><th colspan="2">SAP Status</th></tr>`
-               html += `<tr><td>SAP eligible</td><td style="color: ${booleanStrToColor(commissaryData['SAP eligible'])}">${commissaryData['SAP eligible']}</td></tr>`
-               html += `<tr><td>Calculated EA Date</td><td>${commissaryData['Calculated EA Date']}</td></tr>`
-               html += `<tr><td>First shift day scheduled</td><td>${sapData['First shift day scheduled']}</td></tr>`
-               html += `<tr><td>Qualifies for Pre-Week day off</td><td>${sapData['Qualifies for Pre-event day off']}</td></tr>`
-               html += `<tr><td>Pre-Week shifts scheduled / required</td><td style="color: ${progressToColor(preEventRequirementsProgress)}">${sapData['Pre-event shifts scheduled']} / ${sapData['Pre-event shifts required for SAP']}</td></tr>`
-               html += `<tr><td>Event Week shifts scheduled / required</td><td style="color: ${progressToColor(mainEventRequirementsProgress)}">${sapData['Main-event shifts scheduled']} / ${sapData.mainEventShiftsRequired}</td></tr>`
+        #result table {
+            margin: auto; /* Center the table on the page */
+            width: 50%; /* Set the width to 50% of its container */
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.1); /* Light translucent background */
+            color: white; /* White text color */
+            border-radius: 8px; /* Rounded corners */
+            overflow: hidden; /* Ensures the border radius applies */
+        }
 
-               html += '</table>'
-               resultDiv.innerHTML = html
-           }
+        #result th,
+        #result td {
+            text-align: left;
+            width: 50%; /* Ensures even distribution of columns */
+            padding: 12px 20px; /* More padding for a better look */
+            border-bottom: 1px solid #ddd; /* Subtle border for the bottom */
+            border-color: rgba(255, 255, 255, 0.2); /* Light border color */
+        }
 
-            function progressToColor(progress) {
-                if (progress >= 1) return 'green'
-                if (progress >= 0.5) return 'yellow'
-                return 'red'
-            }
+        #result th {
+            background-color: rgba(0, 0, 0, 0.4); /* Darker background for headers */
+        }
 
-            function booleanStrToColor(value) {
-                return value === 'TRUE' ? 'green' : 'red'
-            }
+        #lastUpdate {
+            margin-top: 20px;
+            color: lightgray;
+        }
+    </style>
+</head>
+<body>
+<div style="padding-top: 100px">
+    <h1>[2025] SAP and Commissary Status</h1>
+    <div id="lastUpdate"></div>
+    <form id="searchForm">
+        <label>
+            <input
+                type="text"
+                name="searchString"
+                placeholder="Enter Babalooey nick"
+            />
+        </label>
+        <button type="submit">Search</button>
+    </form>
+    <div id="resultContainer">
+        <div id="result"></div>
+        <div id="loadingSpinner">Loading...</div>
+    </div>
+</div>
 
-            function displayUserNotfound() {
-                resultDiv.innerHTML = 'User not found.'
-            }
+<script>
+    const form = document.getElementById('searchForm')
+    const loadingSpinner = document.getElementById('loadingSpinner')
+    const resultDiv = document.getElementById('result')
+    const lastUpdateDiv = document.getElementById('lastUpdate')
 
-            function displayLastUpdated(lastUpdate) {
-                const date = new Date(lastUpdate)
-                lastUpdateDiv.innerHTML = `Last Updated: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`
-            }
+    form.onsubmit = function(event) {
+        event.preventDefault()
+        clearResults()
+        disableForm()
+        clearLastUpdated()
+        showLoadingSpinner()
 
-            function clearLastUpdated() {
-                lastUpdateDiv.innerHTML = ''
-            }
+        // disable the submit button and input field
+        form.getElementsByTagName('input')[0].disabled = true
+        form.getElementsByTagName('button')[0].disabled = true
+        const searchString = document.getElementsByName('searchString')[0].value
 
-            function disableForm() {
-                form.getElementsByTagName('input')[0].disabled = true
-                form.getElementsByTagName('button')[0].disabled = true
-            }
+        google.script.run
+            .withSuccessHandler(function(response) {
+                enableForm()
+                hideLoadingSpinner()
+                const { dashboardDetails, sapDetails, eatsDetails, lastUpdate } = response
+                if (dashboardDetails && sapDetails) {
+                    displayAllDetails(dashboardDetails, sapDetails, eatsDetails)
+                } else {
+                    displayUserNotfound()
+                }
+                if (lastUpdate) {
+                    displayLastUpdated(lastUpdate)
+                } else {
+                    clearLastUpdated()
+                }
+            })
+            .onSearch(searchString)
+    }
 
-            function enableForm() {
-                form.getElementsByTagName('input')[0].disabled = false
-                form.getElementsByTagName('button')[0].disabled = false
-            }
+    function displayAllDetails(commissaryData, sapData, eatsDetails) {
+        let html = '<table>'
 
-            function showLoadingSpinner() {
-                loadingSpinner.style.display = 'inline' // Use 'block' for the spinner to occupy the full line
-            }
+        // User Nickname
+        html += `<tr><th colspan="2">User Details</th></tr>`
+        html += `<tr><td>User Nickname</td><td>${commissaryData['User Nickname']}</td></tr>`
 
-            function clearResults() {
-                resultDiv.innerHTML = ''
-            }
+        // Commissary Status
+        html += `<tr><th colspan="2">Commissary Status</th></tr>`
+        // "eatsDetails":{"Pre-Event Eats Shifts Sat-Sat, NEED 6":"0","Event Eats Shifts Sun-Tue, NEED 6":"0","Post event All Shifts Mon and After":"0"}}
+        // Eats Status Pre-Week
+        const eatsPreWeekProgress = `${commissaryData['Eats Status Pre-Week']} (${eatsDetails['Pre-Event Eats Shifts Sat-Sat, NEED 6']}/6)`
+        html += `<tr><td>Eats Status Pre-Week</td><td style="color: ${booleanStrToColor(
+            commissaryData['Eats Status Pre-Week'],
+        )}">${eatsPreWeekProgress}</td></tr>`
 
-            function hideLoadingSpinner() {
-                loadingSpinner.style.display = 'none'
-            }
-        </script>
-    </body>
+        // Eats Status Event Week
+        const eatsEventWeekProgress = `${commissaryData['Eats Status Event Week']} (${eatsDetails['Event Eats Shifts Sun-Tue, NEED 6']}/6)`
+        html += `<tr><td>Eats Status Event Week</td><td style="color: ${booleanStrToColor(
+            commissaryData['Eats Status Event Week'],
+        )}">${eatsEventWeekProgress}</td></tr>`
+
+        // Eats Status Post Event
+        const eatsPostEventProgress = `${commissaryData['Eats Status Post Event']} (${eatsDetails['Post event All Shifts Mon and After']})`
+        html += `<tr><td>Eats Status Post Event</td><td style="color: ${booleanStrToColor(
+            commissaryData['Eats Status Post Event'],
+        )}">${eatsPostEventProgress}</td></tr>`
+
+        // SAP Status
+        const preEventRequirementsProgress =
+            sapData['Pre-event shifts scheduled'] /
+            sapData['Pre-event shifts required for SAP']
+        const mainEventRequirementsProgress =
+            sapData['Main-event shifts scheduled'] /
+            sapData.mainEventShiftsRequired
+
+        html += `<tr><th colspan="2">SAP Status</th></tr>`
+        html += `<tr><td>SAP eligible</td><td style="color: ${booleanStrToColor(
+            commissaryData['SAP eligible'],
+        )}">${commissaryData['SAP eligible']}</td></tr>`
+        html += `<tr><td>Calculated EA Date</td><td>${commissaryData['Calculated EA Date']}</td></tr>`
+        html += `<tr><td>First shift day scheduled</td><td>${sapData['First shift day scheduled']}</td></tr>`
+        html += `<tr><td>Qualifies for Pre-Week day off</td><td>${sapData['Qualifies for Pre-event day off']}</td></tr>`
+        html += `<tr><td>Pre-Week shifts scheduled / required</td><td style="color: ${progressToColor(
+            preEventRequirementsProgress,
+        )}">${sapData['Pre-event shifts scheduled']} / ${
+            sapData['Pre-event shifts required for SAP']
+        }</td></tr>`
+        html += `<tr><td>Event Week shifts scheduled / required</td><td style="color: ${progressToColor(
+            mainEventRequirementsProgress,
+        )}">${sapData['Main-event shifts scheduled']} / ${
+            sapData.mainEventShiftsRequired
+        }</td></tr>`
+
+        html += '</table>'
+        resultDiv.innerHTML = html
+    }
+
+    function progressToColor(progress) {
+        if (progress >= 1) return 'green'
+        if (progress >= 0.5) return 'yellow'
+        return 'red'
+    }
+
+    function booleanStrToColor(value) {
+        return value === 'TRUE' ? 'green' : 'red'
+    }
+
+    function displayUserNotfound() {
+        resultDiv.innerHTML = 'User not found.'
+    }
+
+    function displayLastUpdated(lastUpdate) {
+        const date = new Date(lastUpdate)
+        lastUpdateDiv.innerHTML = `Last Updated: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`
+    }
+
+    function clearLastUpdated() {
+        lastUpdateDiv.innerHTML = ''
+    }
+
+    function disableForm() {
+        form.getElementsByTagName('input')[0].disabled = true
+        form.getElementsByTagName('button')[0].disabled = true
+    }
+
+    function enableForm() {
+        form.getElementsByTagName('input')[0].disabled = false
+        form.getElementsByTagName('button')[0].disabled = false
+    }
+
+    function showLoadingSpinner() {
+        loadingSpinner.style.display = 'inline' // Use 'block' for the spinner to occupy the full line
+    }
+
+    function clearResults() {
+        resultDiv.innerHTML = ''
+    }
+
+    function hideLoadingSpinner() {
+        loadingSpinner.style.display = 'none'
+    }
+</script>
+</body>
 </html>
