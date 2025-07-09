@@ -1,12 +1,10 @@
-import { getSheetDetails } from './dao'
-
-// Apps Script uses the global object; `globalThis` is the safest alias.
+// Apps Script uses the global object. `globalThis` is a safe alias.
 const g = globalThis as any
 g.doGet = () => {
     const htmlTemplate = HtmlService.createTemplateFromFile('index')
     return htmlTemplate
         .evaluate()
-        .setTitle('Commissary and SAP Status')
+        .setTitle('SAP, Eats, and Showers Status')
         .setSandboxMode(HtmlService.SandboxMode.IFRAME)
 }
 
