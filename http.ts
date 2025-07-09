@@ -4,16 +4,19 @@ import { getSheetDetails } from './dao'
 const g = globalThis as any
 g.doGet = () => {
     const htmlTemplate = HtmlService.createTemplateFromFile('index')
-    return htmlTemplate.evaluate().setTitle('Commissary and SAP Status').setSandboxMode(HtmlService.SandboxMode.IFRAME)
+    return htmlTemplate
+        .evaluate()
+        .setTitle('Commissary and SAP Status')
+        .setSandboxMode(HtmlService.SandboxMode.IFRAME)
 }
 
-g.doPost = (e: GoogleAppsScript.Events.DoPost) =>doPost(e)
-
+g.doPost = (e: GoogleAppsScript.Events.DoPost) => doPost(e)
 
 interface PostData {
     secretKey: string
     postProcessLastUpdate: string
 }
+
 function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.TextOutput {
     // Logger.log('doPost called')
     const properties: GoogleAppsScript.Properties.Properties =
