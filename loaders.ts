@@ -1,14 +1,21 @@
 namespace Loaders {
-
     export interface Snapshot {
         lastUpdate: string | null
         headers: string[]
         rows: Record<string, (string | null)[]>
     }
 
-    export function buildSnapshot(cfg: Constants.SheetConfig, lastUpdate: string | null): Snapshot {
-        const sheet = SpreadsheetApp.openById(Constants.SPREADSHEET_ID).getSheetByName(cfg.name)
-        const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0] as string[]
+    export function buildSnapshot(
+        cfg: Constants.SheetConfig,
+        lastUpdate: string | null,
+    ): Snapshot {
+        Logger.log(`Building snapshot for ${cfg.name} with lastUpdate: ${lastUpdate}`)
+        const sheet = SpreadsheetApp.openById(Constants.SPREADSHEET_ID).getSheetByName(
+            cfg.name,
+        )
+        const headers = sheet
+            .getRange(1, 1, 1, sheet.getLastColumn())
+            .getValues()[0] as string[]
 
         const data = sheet
             .getRange(2, 1, sheet.getLastRow() - 1, headers.length)
@@ -30,5 +37,4 @@ namespace Loaders {
 
         return { lastUpdate, headers, rows }
     }
-
 }
