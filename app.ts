@@ -58,3 +58,29 @@ export function hydrateAllCaches() {
         lock.releaseLock()
     }
 }
+
+/**
+ * Ensure there is a recurring time‑driven trigger that re‑hydrates the caches
+ * before the 6‑hour ScriptCache TTL expires. We choose every 5h so the data
+ * is always refreshed in the background and users never wait for a cold build.
+ */
+function ensureHydrateTrigger(): void {
+    const exists = ScriptApp.getProjectTriggers().some(
+        t => t.getHandlerFunction() === 'hydrateAllCachesRecurring',
+    )
+    if (!exists) {
+        Logger.log('No hydrateAllCachesRecurring trigger found, creating one...')
+        ScriptApp.newTrigger('hydrateAllCachesRecurring')
+            .timeBased()
+            .everyHours(5) // ≈1h sooner than CACHE_TTL
+            .create()
+        Logger.log('Created recurring hydrateAllCaches trigger (every 5h)')
+    } else {
+        Logger.log(
+            'Recurring hydrateAllCachesRecurring trigger already exists, skipping creation.',
+        )
+    }
+}
+
+// Make sure the background refresh trigger is set up when the script first loads.
+ensureHydrateTrigger()
