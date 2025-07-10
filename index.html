@@ -133,23 +133,30 @@
         form.getElementsByTagName('button')[0].disabled = true
         const searchString = document.getElementsByName('searchString')[0].value
 
-        google.script.run
-            .withSuccessHandler(function(response) {
-                enableForm()
-                hideLoadingSpinner()
-                const { dashboardDetails, sapDetails, eatsDetails, lastUpdate } = response
-                if (dashboardDetails && sapDetails) {
-                    displayAllDetails(dashboardDetails, sapDetails, eatsDetails)
-                } else {
-                    displayUserNotfound()
-                }
-                if (lastUpdate) {
-                    displayLastUpdated(lastUpdate)
-                } else {
-                    clearLastUpdated()
-                }
-            })
-            .onSearch(searchString)
+        try {
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    enableForm()
+                    hideLoadingSpinner()
+                    const { dashboardDetails, sapDetails, eatsDetails, lastUpdate } = response
+                    if (dashboardDetails && sapDetails) {
+                        displayAllDetails(dashboardDetails, sapDetails, eatsDetails)
+                    } else {
+                        displayUserNotfound()
+                    }
+                    if (lastUpdate) {
+                        displayLastUpdated(lastUpdate)
+                    } else {
+                        clearLastUpdated()
+                    }
+                })
+                .onSearch(searchString)
+        } catch (error) {
+            console.error('Error during search:', error)
+            enableForm()
+            hideLoadingSpinner()
+            displayError(error)
+        }
     }
 
     function displayAllDetails(commissaryData, sapData, eatsDetails) {
@@ -240,6 +247,16 @@
 
     function displayUserNotfound() {
         resultDiv.innerHTML = 'User not found.'
+    }
+
+    function displayError(error) {
+        let html = `<div style="color: red;">`
+        html += `<p>Error: ${error.message}</p>`
+        html += `<p>Please refresh your browser and try again.</p>`
+        html += `<p>If the problem persists, please contact support.</p>`
+        html += `</div>`
+        resultDiv.innerHTML = html
+
     }
 
     function displayLastUpdated(lastUpdate) {
