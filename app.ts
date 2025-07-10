@@ -25,9 +25,36 @@ function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.Tex
         if (postProcessLastUpdate) {
             Logger.log('Post Data: ', JSON.stringify(postData))
             properties.setProperty('postProcessLastUpdate', postProcessLastUpdate)
+            // queue cache rebuild in the background
+            ScriptApp.newTrigger('hydrateAllCaches')
+                .timeBased()
+                .after(10 * 1000) // run ~10 s from now
+                .create()
             return ContentService.createTextOutput('Update stored successfully.')
         }
     }
 
     return ContentService.createTextOutput('Error: Invalid Content Type')
+}
+
+/**
+ * Hydrates all caches by fetching the latest data from the sheets and storing it in the cache.
+ */
+export function hydrateAllCaches() {
+    Logger.log('Hydrating all caches...')
+    const lock = LockService.getScriptLock()
+    if (!lock.tryLock(20_000)) return // another run is already busy
+
+    try {
+        const last = PropertiesService.getScriptProperties().getProperty(
+            'postProcessLastUpdate',
+        )
+
+        Object.values(Constants.SHEETS).forEach(cfg => {
+            const snap = Loaders.buildSnapshot(cfg, last)
+            Cache.write(cfg.cacheKey, snap) // overwrite even if unchanged
+        })
+    } finally {
+        lock.releaseLock()
+    }
 }
