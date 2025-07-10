@@ -1,0 +1,8 @@
+{
+  "scriptId": "1Wo2Z3P9AIEJOAfuiSRTGnWsYNx4eG283CjxUcCs5b-wDIa25lLZB0-r7",
+  "rootDir": "/Users/jasonpoindexter/workspace/github.com/jsonpoindexter/gpe-sap-status-page_appsScript",
+  "webapp": {
+    "access": "ANYONE",
+    "executeAs": "USER_DEPLOYING"
+  }
+}
