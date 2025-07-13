@@ -26,7 +26,7 @@ function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.Tex
             Logger.log('Post Data: ', JSON.stringify(postData))
             properties.setProperty('postProcessLastUpdate', postProcessLastUpdate)
             // queue cache rebuild in the background
-            ScriptApp.newTrigger('hydrateAllCaches')
+            ScriptApp.newTrigger('hydrateAllCachesOnDoPost')
                 .timeBased()
                 .after(10 * 1000) // run ~10 s from now
                 .create()
@@ -38,6 +38,27 @@ function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.Tex
 }
 
 /**
+ * One‑shot wrapper used by the “after 10s” trigger created in doPost().
+ * It rebuilds the caches and then removes its own trigger so the
+ * maintenance logic (ensureHydrateTrigger) won’t mistake it for the 5‑hour recurring trigger.
+ */
+function hydrateAllCachesOnDoPost(e?: GoogleAppsScript.Events.TimeDriven) {
+    try {
+        hydrateAllCaches()
+    } finally {
+        // Delete this very trigger so it never fires again
+        const thisId = e?.triggerUid
+        if (thisId) {
+            ScriptApp.getProjectTriggers()
+                .filter(t => t.getUniqueId() === thisId)
+                .forEach(t => ScriptApp.deleteTrigger(t))
+        }
+    }
+}
+
+/**
+
+ /**
  * Hydrates all caches by fetching the latest data from the sheets and storing it in the cache.
  */
 export function hydrateAllCaches() {
@@ -66,11 +87,11 @@ export function hydrateAllCaches() {
  */
 function ensureHydrateTrigger(): void {
     const exists = ScriptApp.getProjectTriggers().some(
-        t => t.getHandlerFunction() === 'hydrateAllCachesRecurring',
+        t => t.getHandlerFunction() === 'hydrateAllCaches',
     )
     if (!exists) {
-        Logger.log('No hydrateAllCachesRecurring trigger found, creating one...')
-        ScriptApp.newTrigger('hydrateAllCachesRecurring')
+        Logger.log('No hydrateAllCaches trigger found, creating one...')
+        ScriptApp.newTrigger('hydrateAllCaches')
             .timeBased()
             .everyHours(5) // ≈1h sooner than CACHE_TTL
             .create()
