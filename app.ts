@@ -1,6 +1,12 @@
-function doGet() {
-    const htmlTemplate = HtmlService.createTemplateFromFile('index')
-    return htmlTemplate
+function doGet(): GoogleAppsScript.HTML.HtmlOutput {
+    const template = HtmlService.createTemplateFromFile('index')
+
+    // Get the postProcessLastUpdate property
+    const properties = PropertiesService.getScriptProperties()
+    // Pass it to the template
+    template.postProcessLastUpdate = properties.getProperty('postProcessLastUpdate')
+
+    return template
         .evaluate()
         .setTitle('SAP, Eats, and Showers Status')
         .setSandboxMode(HtmlService.SandboxMode.IFRAME)

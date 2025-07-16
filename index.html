@@ -98,7 +98,12 @@
 <body>
 <div style="padding-top: 100px">
     <h1>[2025] SAP, Eats, and Showers Status</h1>
-    <div id="lastUpdate"></div>
+    <div id="lastUpdate">
+        <? if (postProcessLastUpdate) { ?>
+        Last
+        Updated: <?= new Date(postProcessLastUpdate).toLocaleDateString() ?> <?= new Date(postProcessLastUpdate).toLocaleTimeString() ?>
+        <? } ?>
+    </div>
     <form id="searchForm">
         <label>
             <input
@@ -119,13 +124,11 @@
     const form = document.getElementById('searchForm')
     const loadingSpinner = document.getElementById('loadingSpinner')
     const resultDiv = document.getElementById('result')
-    const lastUpdateDiv = document.getElementById('lastUpdate')
 
     form.onsubmit = function(event) {
         event.preventDefault()
         clearResults()
         disableForm()
-        clearLastUpdated()
         showLoadingSpinner()
 
         // disable the submit button and input field
@@ -138,16 +141,11 @@
                 .withSuccessHandler(function(response) {
                     enableForm()
                     hideLoadingSpinner()
-                    const { dashboardDetails, sapDetails, eatsDetails, lastUpdate } = response
+                    const { dashboardDetails, sapDetails, eatsDetails } = response
                     if (dashboardDetails && sapDetails) {
                         displayAllDetails(dashboardDetails, sapDetails, eatsDetails)
                     } else {
                         displayUserNotfound()
-                    }
-                    if (lastUpdate) {
-                        displayLastUpdated(lastUpdate)
-                    } else {
-                        clearLastUpdated()
                     }
                 })
                 .onSearch(searchString)
@@ -258,15 +256,6 @@
         html += `</div>`
         resultDiv.innerHTML = html
 
-    }
-
-    function displayLastUpdated(lastUpdate) {
-        const date = new Date(lastUpdate)
-        lastUpdateDiv.innerHTML = `Last Updated: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`
-    }
-
-    function clearLastUpdated() {
-        lastUpdateDiv.innerHTML = ''
     }
 
     function disableForm() {
